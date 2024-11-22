@@ -12,11 +12,11 @@ export const userRouter = new Hono<{
 
 
 userRouter.post('/signup', async (c) => {
-  console.log("enter")
   const prisma = new PrismaClient({
     datasourceUrl: c.env?.DATABASE_URL,
   }).$extends(withAccelerate());
   const body = await c.req.json();
+  console.log(body.username)
   try {
     const user = await prisma.user.create({
       data: {
@@ -27,7 +27,6 @@ userRouter.post('/signup', async (c) => {
     const jwt = await sign({ id: user.id }, c.env.JWT_SECRET);
     return c.json({ jwt })
   } catch (err) {
-    console.error("Error in signup:", err);
     c.status(403)
     return c.json({ error: 'error while signing up' })
   }
@@ -39,7 +38,6 @@ userRouter.post('/signin', async (c) => {
   }).$extends(withAccelerate());
   const body = await c.req.json();
   try {
-    console.log('check 1')
     const user = await prisma.user.findFirst({
       where: {
         email: body.email,
@@ -50,7 +48,6 @@ userRouter.post('/signin', async (c) => {
       c.status(403);
       return c.json({ error: "user not found" });
     }
-    console.log('check 2')
     const jwt = await sign({ id: user.id }, c.env.JWT_SECRET);
     return c.json({ jwt })
   } catch (err) {
